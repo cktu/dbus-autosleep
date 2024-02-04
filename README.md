@@ -183,7 +183,7 @@ When the script is successfully running, it publishes some debug values on the d
 #### Restart the script
 
 If you want to restart the script, for example after changing it, just run the following command:\
-`/data/dbus-solaredge/kill_me.sh`
+`/data/dbus-autosleep/kill_me.sh`
 
 The supervisor will restart the script within a few seconds.
 
