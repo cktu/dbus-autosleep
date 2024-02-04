@@ -133,14 +133,16 @@ LOCK_TIME = 600
 
 3. Set permissions for files:
 
-  `chmod 755 /data/dbus-autosleep/service/run`
-  
-  `chmod 755 /data/dbus-autosleep/service/log/run`
-  
-  `chmod 744 /data/dbus-autosleep/*.sh`
+   `chmod 755 /data/dbus-autosleep/service/run`
+   
+   `chmod 755 /data/dbus-autosleep/service/log/run`
+   
+   `chmod 744 /data/dbus-autosleep/*.sh`
 
-4. Add a symlink to for auto starting:
+4. Add symlinks for auto starting:
 
+   `ln -s /data/dbus-autosleep/service/ /service/dbus-autosleep`
+   
    `ln -s /data/dbus-autosleep/service/ /opt/victronenergy/service/dbus-autosleep`
 
    The supervisor should automatically start this service within seconds, if not simply reboot your system.
