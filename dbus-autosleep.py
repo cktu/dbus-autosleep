@@ -1,6 +1,5 @@
 #!/usr/bin/env python
  
-# probably not all these required some are legacy and no longer used.
 from dbus.mainloop.glib import DBusGMainLoop
 
 try:
@@ -26,16 +25,44 @@ sys.path.insert(1, os.path.join(os.path.dirname(__file__), '/opt/victronenergy/d
 from vedbus import VeDbusService
 
 # ----------------------------------------------------------------
-VERSION     = "0.1"
-MIN_PV_POWER = 150       # Minimum PV power to activate charging [W]
-THRESHOLD_DEBOUNCE = 10  # Debounce time for charge/feed-in timeouts [s]
-FEED_IN_TIMEOUT = 3600   # Feed-in timer to disable inverter [s]
-FEED_IN_THRESHOLD = 100  # Grid threshold for inverter activation [W]
-CHARGE_TIMEOUT = 3600    # Charge timer to disable charger [s]
-CHARGE_THRESHOLD = -100  # Grid threshold for charger activation [W]
-STABLE_TIMER = 60        # Stabilisation time for feed in or charge request [s]
-LOCK_TIME = 600          # Minimum time between changes of inverter mode [s]
+# --- PARAMETERS -------------------------------------------------
 # ----------------------------------------------------------------
+
+# dbus path for Victron energy storage system
+ESS_PATH = 'com.victronenergy.vebus.ttyS3'
+
+# dbus path for grid meter
+GRID_METER_PATH = 'com.victronenergy.grid.grid_id00'
+
+# dbus path for PV inverter
+PV_INVERTER_PATH = 'com.victronenergy.pvinverter.pv0.pvinverter_id00'
+
+# Debounce time for charge/feed-in timeouts [s]
+THRESHOLD_DEBOUNCE = 10
+
+# Feed-in timer to disable inverter [s]
+FEED_IN_TIMEOUT = 3600
+
+# Grid threshold for inverter activation [W]
+FEED_IN_THRESHOLD = 100
+
+# Charge timer to disable charger [s]
+CHARGE_TIMEOUT = 3600
+
+# Grid threshold for charger activation [W]
+CHARGE_THRESHOLD = -100
+
+# Stabilisation time for feed in or charge request [s]
+STABLE_TIMER = 60
+
+# Minimum time between changes of inverter mode [s]
+LOCK_TIME = 600
+
+# ----------------------------------------------------------------
+# ----------------------------------------------------------------
+# ----------------------------------------------------------------
+
+VERSION     = "0.1"
 
 # Have a mainloop, so we can send/receive asynchronous calls to and from dbus
 DBusGMainLoop(set_as_default=True)
@@ -373,14 +400,15 @@ dbusservice['debug']          = new_service('com.victronenergy', 'debug', 'dbus_
 # Bus items to be read/written
 busitem = {}
 try:
-    busitem['DisableFeedIn'] = dbusconnection().get_object('com.victronenergy.vebus.ttyS3', '/Hub4/DisableFeedIn')
-    busitem['DisableCharge'] = dbusconnection().get_object('com.victronenergy.vebus.ttyS3', '/Hub4/DisableCharge')
-    busitem['GridPower']     = dbusconnection().get_object('com.victronenergy.grid.grid_id00', '/Ac/Power')
-    busitem['PvPower']       = dbusconnection().get_object('com.victronenergy.pvinverter.pv0.pvinverter_id00', '/Ac/Power')
-    busitem['PvStatus']      = dbusconnection().get_object('com.victronenergy.pvinverter.pv0.pvinverter_id00', '/StatusCode')
-    busitem['Mode']          = dbusconnection().get_object('com.victronenergy.vebus.ttyS3', '/Mode')
-    busitem['BatterySoc']    = dbusconnection().get_object('com.victronenergy.system', '/Dc/Battery/Soc')
-    busitem['EssPower']      = dbusconnection().get_object('com.victronenergy.vebus.ttyS3', '/Ac/ActiveIn/L1/P')
+    SYSTEM_PATH = 'com.victronenergy.system'
+    busitem['DisableFeedIn'] = dbusconnection().get_object(ESS_PATH, '/Hub4/DisableFeedIn')
+    busitem['DisableCharge'] = dbusconnection().get_object(ESS_PATH, '/Hub4/DisableCharge')
+    busitem['GridPower']     = dbusconnection().get_object(GRID_METER_PATH, '/Ac/Power')
+    busitem['PvPower']       = dbusconnection().get_object(PV_INVERTER_PATH, '/Ac/Power')
+    busitem['PvStatus']      = dbusconnection().get_object(PV_INVERTER_PATH, '/StatusCode')
+    busitem['Mode']          = dbusconnection().get_object(ESS_PATH, '/Mode')
+    busitem['BatterySoc']    = dbusconnection().get_object(SYSTEM_PATH, '/Dc/Battery/Soc')
+    busitem['EssPower']      = dbusconnection().get_object(ESS_PATH, '/Ac/ActiveIn/L1/P')
 except:
     log.error('Required bus items not found, terminating in 10 seconds')
     time.sleep(10)
