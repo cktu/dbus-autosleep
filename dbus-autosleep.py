@@ -46,11 +46,17 @@ FEED_IN_TIMEOUT = 3600
 # Grid threshold for inverter activation [W]
 FEED_IN_THRESHOLD = 100
 
+# Grid threshold for inverter deactivation [W]
+FEED_IN_DISABLE_THRESHOLD = 50
+
 # Charge timer to disable charger [s]
 CHARGE_TIMEOUT = 3600
 
 # Grid threshold for charger activation [W]
 CHARGE_THRESHOLD = -100
+
+# Grid threshold for charger deactivation [W]
+CHARGE_DISABLE_THRESHOLD = -50
 
 # Stabilisation time for feed in or charge request [s]
 STABLE_TIMER = 60
@@ -62,7 +68,7 @@ LOCK_TIME = 600
 # ----------------------------------------------------------------
 # ----------------------------------------------------------------
 
-VERSION     = "0.1"
+VERSION     = "0.2"
 
 # Have a mainloop, so we can send/receive asynchronous calls to and from dbus
 DBusGMainLoop(set_as_default=True)
@@ -184,7 +190,7 @@ def update_ess_mode():
         # Debounce feed-in trigger
         # grid_import_debounce == 0 means the trigger has been stable for THRESHOLD_DEBOUNCE
         global grid_import_debounce
-        feed_in_threshold_exceeded = residual_load > FEED_IN_THRESHOLD
+        feed_in_threshold_exceeded = residual_load > FEED_IN_DISABLE_THRESHOLD
         if not feed_in_threshold_exceeded:
             grid_import_debounce = THRESHOLD_DEBOUNCE
         elif grid_import_debounce > 0:
@@ -211,6 +217,7 @@ def update_ess_mode():
         #   (b2a) feed-in request is currently not set (again for hysteresis), and
         #   (b2b) PV is currently unable to supply the load.
         global feed_in_stable
+        feed_in_threshold_exceeded = residual_load > FEED_IN_THRESHOLD
         feed_in_new = feed_in_allowed and ((feed_in_stable and (grid_import_timer > 0)) or ((not feed_in_stable) and feed_in_threshold_exceeded))
         dbusservice['debug']['/FeedInRequest'] = feed_in_new
 
@@ -241,7 +248,7 @@ def update_ess_mode():
         # Debounce charge trigger
         # grid_export_debounce == 0 means the trigger has been stable for THRESHOLD_DEBOUNCE
         global grid_export_debounce
-        charge_threshold_exceeded = residual_load < CHARGE_THRESHOLD  # exceeded means more negative
+        charge_threshold_exceeded = residual_load < CHARGE_DISABLE_THRESHOLD  # exceeded means more negative
         if not charge_threshold_exceeded:
             grid_export_debounce = THRESHOLD_DEBOUNCE
         elif grid_export_debounce > 0:
@@ -269,6 +276,7 @@ def update_ess_mode():
         #   (b2b) excess power is currently available, and
         #   (c) PV inverter is active (this speeds up the shutdown when PV inverter goes to sleep).
         global charge_stable
+        charge_threshold_exceeded = residual_load < CHARGE_THRESHOLD  # exceeded means more negative
         charge_new = charge_allowed and ((charge_stable and (grid_export_timer > 0)) or ((not charge_stable) and charge_threshold_exceeded)) and pv_active
         dbusservice['debug']['/ChargeRequest'] = charge_new
 

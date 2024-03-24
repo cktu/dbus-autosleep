@@ -43,7 +43,7 @@ for more than _STABLE_TIMER_.
 It is reset if
 
 * the Victron Hub4 control does not allow charging, or
-* excess PV power has never been available continuously for _THRESHOLD_DEBOUNCE_ within the _CHARGE_TIMEOUT_, or
+* excess PV power has never been available (i.e. the residual load wasn't below _CHARGE_DISABLE_THRESHOLD_) continuously for _THRESHOLD_DEBOUNCE_ within the _CHARGE_TIMEOUT_, or
 * the PV inverter is not active
 
 for more than _STABLE_TIMER_.
@@ -62,7 +62,7 @@ for more than _STABLE_TIMER_.
 It is reset if
 
 * the Victron Hub4 control does not allow feed-in, or
-* no power demand existed continuously for _THRESHOLD_DEBOUNCE_ within the _FEED_IN_TIMEOUT_
+* no power demand existed (i.e. the residual load wasn't above _FEED_IN_DISABLE_THRESHOLD_) continuously for _THRESHOLD_DEBOUNCE_ within the _FEED_IN_TIMEOUT_
 
 for more than _STABLE_TIMER_.
 
@@ -104,11 +104,17 @@ FEED_IN_TIMEOUT = 3600
 # Grid threshold for inverter activation [W]
 FEED_IN_THRESHOLD = 100
 
+# Grid threshold for inverter deactivation [W]
+FEED_IN_DISABLE_THRESHOLD = 50
+
 # Charge timer to disable charger [s]
 CHARGE_TIMEOUT = 3600
 
 # Grid threshold for charger activation [W]
 CHARGE_THRESHOLD = -100
+
+# Grid threshold for charger deactivation [W]
+CHARGE_DISABLE_THRESHOLD = -50
 
 # Stabilisation time for feed in or charge request [s]
 STABLE_TIMER = 60
